@@ -51,6 +51,7 @@ We support various LLMs. The full list of supported models is provided below:
 - llama3-1
 - claude3-5
 - mistral-large
+- gemini-flash-lite
 
 
 ### Running the application

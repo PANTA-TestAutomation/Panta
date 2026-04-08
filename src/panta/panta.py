@@ -141,14 +141,12 @@ class Panta:
                 f_label = f"f_{iteration_count}"
 
                 time_start = time.time()
-                token_count = 0
                 if int(cur_line_cov) == 0 and int(cur_branch_cov) == 0:
                     self.logger.info(f"initial tests generation using baseline type of prompt")
-                    generated_tests_dict, gen_token_count = self.test_gen.generate_init_tests(g_label, max_tokens=4096)
+                    generated_tests_dict, gen_token_count, gen_cost = self.test_gen.generate_init_tests(g_label, max_tokens=4096)
                 else:
-                    generated_tests_dict, gen_token_count = self.test_gen.generate_tests(g_label, max_tokens=4096,
+                    generated_tests_dict, gen_token_count, gen_cost = self.test_gen.generate_tests(g_label, max_tokens=4096,
                                                                         pick_two_paths=self.args.pick_two_paths)
-                token_count += gen_token_count
 
                 for generated_test in (generated_tests_dict.get("new_tests") or []):
                     test_result = self.test_gen.validate_test(generated_test)
@@ -161,7 +159,7 @@ class Panta:
                     "status": "INFO",
                     "label": g_label,
                     "reason": time.time() - time_start,
-                    "exit_code": token_count,
+                    "exit_code": gen_cost,
                     "stderr": "",
                     "stdout": "",
                     "test": "",
@@ -173,8 +171,7 @@ class Panta:
                 if self.args.enable_fixing:
                     # a separate phase to fix the failed tests in current generation iteration
                     iter_num = self.args.enable_fixing
-                    fix_results_list, fix_token_count = self.test_gen.fix_failed_tests(f_label, iter_num, max_tokens=4096)
-                    token_count += fix_token_count
+                    fix_results_list, fix_token_count, fix_cost = self.test_gen.fix_failed_tests(f_label, iter_num, max_tokens=4096)
                     for fix_result in fix_results_list:
                         test_results_list.append(fix_result)
 
@@ -184,7 +181,7 @@ class Panta:
                         "status": "INFO",
                         "label": f_label,
                         "reason": time.time() - time_start,
-                        "exit_code": token_count,
+                        "exit_code": fix_cost,
                         "stderr": "",
                         "stdout": "",
                         "test": "",
@@ -235,7 +232,10 @@ class Panta:
         file_name = file_name.split(".")[0]
         name_list = [file_name, self.args.prompt_type, self.args.report_filepath]
         report_file = "_".join(name_list)
-        report_path = f"../../result-files/{self.report_label}/"
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        panta_root = os.path.abspath(os.path.join(current_dir, "../../"))
+        report_path = os.path.join(panta_root, "result-files", self.report_label) + "/"
         info_dict = {
             "status": "INFO",
             "reason": "",
@@ -283,7 +283,9 @@ class Panta:
         file_name = file_name.split(".")[0]
         name_list = [file_name, "symprompt", self.args.report_filepath]
         report_file = "_".join(name_list)
-        report_path = f"../../result-files/{self.report_label}/"
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        panta_root = os.path.abspath(os.path.join(current_dir, "../../"))
+        report_path = os.path.join(panta_root, "result-files", self.report_label) + "/"
         if not os.path.exists(report_path):
             os.makedirs(report_path)
         ReportGenerator.generate_report(test_results_list, report_path + report_file)

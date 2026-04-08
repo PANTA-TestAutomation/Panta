@@ -5,6 +5,7 @@ import os
 import configparser
 import sys
 from pathlib import Path
+import argparse
 
 from bs4 import BeautifulSoup
 
@@ -77,9 +78,9 @@ def fill_config(config_data, filename="config.ini"):
     print(f"Configuration written to {filename}")
 
 
-def get_d4j_subject_classes():
+def get_d4j_subject_classes(class_list="class_list.csv"):
     d4j_subjects = {}
-    with open('data/class_list.csv', 'r') as file:
+    with open(f'data/{class_list}', 'r') as file:
         reader = csv.reader(file)
         next(reader)
 
@@ -97,9 +98,9 @@ def get_d4j_subject_classes():
 
 def fill_config_and_execute(src_f, proj_name, iter_num, prompt_type, model):
     config_data = extract_config_data(src_f, proj_name, iter_num, prompt_type, model)
-    fill_config(config_data, filename="../src/panta/config.ini")
+    fill_config(config_data, filename=f"{ROOT}/src/panta/config.ini")
     cmd = ["python", "-m", "panta.main"]  # Example: Python script execution
-    process = subprocess.Popen(cmd, cwd="../", stdout=subprocess.PIPE, text=True)
+    process = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.PIPE, text=True)
     for line in process.stdout:
         print(line, end='')
 
@@ -108,10 +109,24 @@ def fill_config_and_execute(src_f, proj_name, iter_num, prompt_type, model):
 
 
 if __name__ == '__main__':
-    defects4j_subject_classes = get_d4j_subject_classes()
-    prompt = sys.argv[1]
-    model = sys.argv[2]
-    result_path = f"../../result-files/{prompt}_{model}"
+    # Set up the parser
+    parser = argparse.ArgumentParser(description="Run Defects4J evaluation")
+    parser.add_argument("prompt", help="The prompt to use")
+    parser.add_argument("model", help="The model to use")
+
+    # Make it optional, but default to "class_list.csv" if left out
+    parser.add_argument(
+        "--class-list",
+        default="class_list.csv",
+        help="Optional list of classes (defaults to class_list.csv)"
+    )
+
+    # Parse the arguments
+    args = parser.parse_args()
+    print(args.class_list)
+    # Call your function
+    defects4j_subject_classes = get_d4j_subject_classes(class_list=args.class_list)
+    result_path = f"{ROOT}/result-files/{args.prompt}_{args.model}"
     defects4j_subjects = ["JacksonXml-5f", "Csv-16f", "Collections-28f", "Gson-16f", "Cli-40f", "JacksonCore-26f",
                           "JxPath-22f", "Jsoup-93f", "Codec-18f", "Compress-47f", "JacksonDatabind-112f",
                           "Time-13f", "Lang-4f", "Math-2f"]
@@ -123,10 +138,10 @@ if __name__ == '__main__':
         file_objects = data["src_test_exact_match"] + data["src_test_fuzz_match"] + data["src_without_tests"]
         class_subjects = defects4j_subject_classes[p_name]
         for src_file in file_objects:
-            html_file = f"{result_path}/{src_file['src_name']}_{prompt}_test_results.html"
+            html_file = f"{result_path}/{src_file['src_name']}_{args.prompt}_test_results.html"
             if src_file["src_name"] in class_subjects.keys():
                 max_cc = class_subjects[src_file["src_name"]]
                 if not os.path.exists(html_file):
                     print("execute", src_file["src_name"], max_cc)
-                    fill_config_and_execute(src_file, p_name, max_cc, prompt, model)
+                    fill_config_and_execute(src_file, p_name, max_cc, args.prompt, args.model)
 

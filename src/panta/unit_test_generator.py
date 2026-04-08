@@ -248,7 +248,7 @@ class UnitTestGenerator:
                         file="test_headers_indentation_prompt"
                     )
                 )
-                response, prompt_token_count, response_token_count = (
+                response, prompt_token_count, response_token_count, cost = (
                     self.llm_invoker.call_model(prompt=prompt_headers_indentation)
                 )
                 tests_dict = load_yaml(response)
@@ -270,7 +270,7 @@ class UnitTestGenerator:
                         file="analyze_suite_test_insert_line"
                     )
                 )
-                response, prompt_token_count, response_token_count = (
+                response, prompt_token_count, response_token_count, cost = (
                     self.llm_invoker.call_model(prompt=prompt_test_insert_line)
                 )
                 tests_dict = load_yaml(response)
@@ -327,16 +327,16 @@ class UnitTestGenerator:
     def generate_tests(self, g_label, max_tokens=4096, pick_two_paths=True):
         self.prompt = self.build_prompt(self.prompt_type, pick_two_paths)
         # self.logger.info(f"{g_label}: {self.path_history}")
-        tests_dict, token_count = self.generate_test_by_prompt_llm(self.prompt, max_tokens)
-        return tests_dict, token_count
+        tests_dict, token_count, cost = self.generate_test_by_prompt_llm(self.prompt, max_tokens)
+        return tests_dict, token_count, cost
 
     def generate_init_tests(self, prompt_type='baseline', max_tokens=4096):
         prompt = self.build_prompt(prompt_type)
-        tests_dict, token_count = self.generate_test_by_prompt_llm(prompt, max_tokens)
-        return tests_dict, token_count
+        tests_dict, token_count, cost = self.generate_test_by_prompt_llm(prompt, max_tokens)
+        return tests_dict, token_count, cost
 
     def generate_test_by_prompt_llm(self, prompt, max_tokens=4096):
-        response, prompt_token_count, response_token_count = (
+        response, prompt_token_count, response_token_count, cost = (
             self.llm_invoker.call_model(prompt=prompt,
                                         max_tokens=max_tokens))
         self.logger.info(f"Total token count for LLM {self.llm_invoker.model}: "
@@ -361,7 +361,7 @@ class UnitTestGenerator:
             # self.failed_test_runs.append(fail_details)
             tests_dict = []
 
-        return tests_dict, token_count
+        return tests_dict, token_count, cost
 
     def validate_test(self, generated_test: dict):
         # Try to add the generated test to the relevant section in the original test file
@@ -631,16 +631,18 @@ class UnitTestGenerator:
         fix_results_list = []
         iter_count = 0
         token_count = 0
+        total_cost = 0
         while self.failed_test_runs and iter_count < iter_num:
             try:
                 fixing_prompt = self.build_prompt_for_fixing()
-                fixed_tests, tokens = self.generate_test_by_prompt_llm(fixing_prompt, max_tokens)
+                fixed_tests, tokens, cost = self.generate_test_by_prompt_llm(fixing_prompt, max_tokens)
                 iter_count += 1
                 token_count += tokens
+                total_cost += cost
                 for fixed_test in fixed_tests.get("new_tests", []):
                     test_result = self.validate_test(fixed_test)
                     test_result['label'] = f"{f_label}_{iter_count}"
                     fix_results_list.append(test_result)
             except Exception as e:
                 self.logger.error(f"Error processing failed test runs: {e}")
-        return fix_results_list, token_count
+        return fix_results_list, token_count, total_cost

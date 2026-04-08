@@ -2,11 +2,14 @@ import time
 import random
 
 import litellm
+import os
+from dotenv import load_dotenv
 
 
 class LLMInvocation:
     def __init__(self, model: str):
         self.model = model
+        load_dotenv()
 
     def call_model(self, prompt: dict, max_tokens=4096, temperature=0.2):
         """
@@ -35,6 +38,16 @@ class LLMInvocation:
                 "temperature": temperature,
                 "aws_region_name": "us-east-2"
             }
+        elif "gemini" in self.model:
+            print(self.model)
+            os.environ["GEMINI_API_KEY"] = os.getenv('GEMINI_API_KEY')
+            completion_params = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "stream": True,
+                "temperature": 1.0
+            }
         else:
             completion_params = {
                 "model": self.model,
@@ -60,10 +73,12 @@ class LLMInvocation:
                     print(f"Error during streaming: {e}")
                 print("\n")
                 model_response = litellm.stream_chunk_builder(chunks, messages=messages)
+                cost = litellm.completion_cost(completion_response=model_response)
                 return (
                     model_response["choices"][0]["message"]["content"],
                     int(model_response["usage"]["prompt_tokens"]),
                     int(model_response["usage"]["completion_tokens"]),
+                    cost
                 )
             except Exception as e:
                 delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
