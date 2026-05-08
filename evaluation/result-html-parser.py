@@ -3,7 +3,10 @@ import json
 import csv
 import os
 import statistics
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+print(ROOT)
 def read_html_file(file_name, file_path):
     with open(f"{file_path}/{file_name}", 'r', encoding='utf-8') as file:
         return file.read()
@@ -36,7 +39,7 @@ def count_method_under_tests(m_dict):
 
 def get_d4j_subject_classes():
     d4j_subjects = {}
-    with open('class_list.csv', 'r') as file:
+    with open('data/class_list.csv', 'r') as file:
         reader = csv.reader(file)
         next(reader)
 
@@ -116,7 +119,7 @@ def get_coverage_for_first_iteration(parsed_coverage_list):
 
 def append_result_to_csv(project, class_name, max_cc, med_cc, m_num):
     basic_prompt_type = "baseline"
-    basic_path = f"../../result-files/baseline_llama3-3"
+    basic_path = f"{ROOT}/result-files/baseline_llama3-3"
     basic_coverage_list = parse_line_branch_coverage(class_name, basic_prompt_type, basic_path)
     if basic_coverage_list:
         basic_line = basic_coverage_list[-1]["line_coverage"]
@@ -126,7 +129,7 @@ def append_result_to_csv(project, class_name, max_cc, med_cc, m_num):
     baseline_line, baseline_branch = get_coverage_for_first_iteration(basic_coverage_list)
 
     cov_prompt_type = "coverage"
-    cov_path = f"../../result-files/coverage_llama3-3"
+    cov_path = f"{ROOT}/result-files/coverage_llama3-3"
     cov_coverage_list = parse_line_branch_coverage(class_name, cov_prompt_type, cov_path)
 
     if cov_coverage_list:
@@ -135,7 +138,7 @@ def append_result_to_csv(project, class_name, max_cc, med_cc, m_num):
         coverage_line, coverage_branch = None, None
 
     control_prompt_type = "control"
-    control_path = f"../../result-files/control_llama3-3"
+    control_path = f"{ROOT}/result-files/control_llama3-3"
     control_coverage_list = parse_line_branch_coverage(class_name, control_prompt_type, control_path)
 
     if control_coverage_list:
@@ -146,7 +149,7 @@ def append_result_to_csv(project, class_name, max_cc, med_cc, m_num):
         panta_line, panta_branch = None, None
 
     symprompt_type = "symprompt"
-    symprompt_path = f"../../result-files/symprompt_llama3-3"
+    symprompt_path = f"{ROOT}/result-files/symprompt_llama3-3"
     symprompt_coverage_list = parse_line_branch_coverage(class_name, symprompt_type, symprompt_path)
 
     if symprompt_coverage_list:

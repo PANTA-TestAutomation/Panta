@@ -14,6 +14,11 @@ To generate tests for the classes in `class_list.csv` by Panta
 python3 execute_classes_with_high_complexity.py control llama3-3      # results are under `../../result-files/control_llama3-3`
 ```
 
+To generate tests for other customized class list, e.g. `high_complexity_classes.csv` by Panta
+```console
+python3 execute_classes_with_high_complexity.py control llama3-3 --class-list high_complexity_classes.csv   # results are under `../../result-files/control_llama3-3`
+```
+
 To generate tests for the classes in `class_list.csv` by SymPrompt
 ```console
 python3 execute_symprompt.py symprompt llama3-3            # results are under `../../result-files/symprompt_llama3-3`

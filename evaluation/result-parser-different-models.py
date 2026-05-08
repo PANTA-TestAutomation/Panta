@@ -2,8 +2,11 @@ from bs4 import BeautifulSoup
 import json
 import csv
 import os
+from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parents[1]
+print(ROOT)
 def read_html_file(file_name, file_path):
     with open(f"{file_path}/{file_name}", 'r', encoding='utf-8') as file:
         return file.read()
@@ -32,7 +35,7 @@ def count_method_under_tests(m_dict):
 
 def get_d4j_subject_classes():
     d4j_subjects = {}
-    with open('class_list.csv', 'r') as file:
+    with open('data/class_list.csv', 'r') as file:
         reader = csv.reader(file)
         next(reader)
 
@@ -112,7 +115,7 @@ def get_coverage_for_first_iteration(parsed_coverage_list):
 
 def append_result_to_csv(project, class_name, max_cc, category, m_num):
     control_prompt_type = "control"
-    control_path = f"../../result-files/control_llama3-3"
+    control_path = f"{ROOT}/result-files/control_llama3-3"
     control_coverage_list = parse_line_branch_coverage(class_name, control_prompt_type, control_path)
 
     if control_coverage_list:
@@ -122,7 +125,7 @@ def append_result_to_csv(project, class_name, max_cc, category, m_num):
     else:
         llama_line, llama_branch = None, None
 
-    control_path = f"../../result-files/control_gpt-4o-mini"
+    control_path = f"{ROOT}/result-files/control_gpt-4o-mini"
     control_coverage_list = parse_line_branch_coverage(class_name, control_prompt_type, control_path)
 
     if control_coverage_list:
@@ -132,7 +135,7 @@ def append_result_to_csv(project, class_name, max_cc, category, m_num):
     else:
         gpt_line, gpt_branch = None, None
 
-    control_path = f"../../result-files/control_claude3-5"
+    control_path = f"{ROOT}/result-files/control_claude3-5"
     control_coverage_list = parse_line_branch_coverage(class_name, control_prompt_type, control_path)
 
     if control_coverage_list:
@@ -142,7 +145,7 @@ def append_result_to_csv(project, class_name, max_cc, category, m_num):
     else:
         claude_line, claude_branch = None, None
 
-    control_path = f"../../result-files/control_mistral-large"
+    control_path = f"{ROOT}/result-files/control_mistral-large"
     control_coverage_list = parse_line_branch_coverage(class_name, control_prompt_type, control_path)
 
     if control_coverage_list:
