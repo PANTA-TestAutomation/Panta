@@ -132,6 +132,8 @@ if __name__ == '__main__':
                           "Time-13f", "Lang-4f", "Math-2f"]
     for p_name in defects4j_subjects:
         #print(p_name)
+        if p_name not in defects4j_subject_classes.keys():
+            continue
         with open(os.path.join("defects4j-codefiles", f"{p_name}-codefiles.json"), 'r') as f:
             data = json.load(f)
 
