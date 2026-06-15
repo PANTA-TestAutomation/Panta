@@ -24,6 +24,11 @@ To generate tests for the classes in `class_list.csv` by SymPrompt
 python3 execute_symprompt.py symprompt llama3-3            # results are under `../../result-files/symprompt_llama3-3`
 ```
 
+To generate tests for other customized class list, e.g. `high_complexity_classes.csv` by SymPrompt
+```console
+python3 execute_symprompt.py symprompt llama3-3 --class-list high_complexity_classes.csv   # results are under `../../result-files/symprompt_llama3-3`
+```
+
 Parse result files to extract results under `../../result-files`
 ```console
 python3 result-html-parse.py                   # coverage for Panta ablation study and SymPrompt

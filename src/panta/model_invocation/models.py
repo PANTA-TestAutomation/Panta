@@ -9,7 +9,7 @@ class Models:
     DEEPSEEK_R1 = "deepseek-r1"
     CLAUDE_3_5_HAIKU = "claude-3-5-haiku-20241022"
     MISTRAL_LARGE = "bedrock/mistral.mistral-large-2407-v1:0"
-    GEMINI_3_1_FLASH_LITE = "gemini/gemini-3.1-flash-lite-preview"
+    GEMINI_3_1_FLASH_LITE = "gemini-3.1-flash-lite"
 
     # Dictionary to map short names to actual model identifiers
     SHORT_TO_FULL_MODEL_MAP = {

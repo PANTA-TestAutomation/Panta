@@ -39,8 +39,15 @@ class LLMInvocation:
                 "aws_region_name": "us-east-2"
             }
         elif "gemini" in self.model:
-            print(self.model)
-            os.environ["GEMINI_API_KEY"] = os.getenv('GEMINI_API_KEY')
+            # Setup Vertex AI environment
+            project = os.getenv("VERTEXAI_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
+            location = os.getenv("VERTEXAI_LOCATION") or os.getenv("GOOGLE_CLOUD_LOCATION") or "us-central1"
+            
+            if project:
+                os.environ["VERTEXAI_PROJECT"] = project
+            if location:
+                os.environ["VERTEXAI_LOCATION"] = location
+
             completion_params = {
                 "model": self.model,
                 "messages": messages,
