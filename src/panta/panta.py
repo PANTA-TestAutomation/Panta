@@ -259,7 +259,7 @@ class Panta:
 
         symprompt = SymPrompt(project_dir=self.args.project_directory, source_code_file=self.args.source_code_file,
                               llm_model=self.args.model, junit_version=self.args.junit_version)
-        symprompt.generate_test()
+        cost = symprompt.generate_test()
         generated_tests = symprompt.generated_tests
 
         for method in generated_tests.keys():
@@ -271,7 +271,7 @@ class Panta:
         info_dict = {
             "status": "INFO",
             "reason": "",
-            "exit_code": 0,
+            "exit_code": cost,
             "stderr": "",
             "stdout": "",
             "test": "",

@@ -143,6 +143,7 @@ class SymPrompt:
         return methods_with_paths
 
     def generate_test(self, max_tokens=4096):
+        cost_total = 0
         for method in self.methods_under_test_with_paths:
             # method is (name, complexity, method_label, method_value, candidate_paths, method_calls, focal_method)
             method_name = method[0]
@@ -158,12 +159,14 @@ class SymPrompt:
                 self.prompt = self.build_prompt_for_each_path(method_name, method_signiture, method_label,
                                                               method_calls_in_class, focal_method_lines, path)
 
-                generated_test = self.generate_test_by_prompt_llm(self.prompt, max_tokens)
+                generated_test, cost = self.generate_test_by_prompt_llm(self.prompt, max_tokens)
+                cost_total += cost
                 if 'single_test' in generated_test and generated_test['single_test']:
                     self.generated_tests[method_label].extend(generated_test['single_test'])
+        return cost_total
 
     def generate_test_by_prompt_llm(self, prompt: dict, max_tokens=4096):
-        response, prompt_token_count, response_token_count = (
+        response, prompt_token_count, response_token_count, cost = (
             self.llm_invoker.call_model(prompt=prompt,
                                         max_tokens=max_tokens))
         self.logger.info(f"Total token count for LLM {self.llm_invoker.model}: "
@@ -187,7 +190,7 @@ class SymPrompt:
             # self.failed_test_runs.append(fail_details)
             tests_dict = {}
 
-        return tests_dict
+        return tests_dict, cost
 
     def build_prompt_for_each_path(self, method_name, method_signiture, method_label,
                                    method_calls_in_class, focal_method_lines, path) -> dict:
